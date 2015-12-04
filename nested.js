@@ -2,22 +2,20 @@ var Promise = require('bluebird')
 var fs = require('fs')
 var request = require('request')
 var cheerio = require('cheerio')
-var each = require('lodash.foreach')
-var filter = require('lodash.filter')
-var map = require('lodash.map')
 var Url = require('url')
+import { foreach, map } from 'ramda'
+
 
 
 function handleError (err) {
   console.log('Oh no! An error:', err)
 }
 
-fs.readFile(__dirname + '/data/urls.json', 'utf8', function (err, data) {
+fs.readFile(__dirname + '/data/urls.json', 'utf8', (err, data) => {
   if (err) { handleError(err) }
-  var urls = JSON.parse(data)
 
-  urls.forEach(function (url) {
-    request(url, function (err, data) {
+  foreach((url) => {
+    request(url, (err, data) => {
       if (err) { handleError(err) }
       var fileName = data.request.host + '.json'
       var $ = cheerio.load(data.body)
@@ -29,5 +27,5 @@ fs.readFile(__dirname + '/data/urls.json', 'utf8', function (err, data) {
         console.log(fileName + ' written!')
       })
     })
-  })
+  }, JSON.parse(data))
 })
