@@ -1,1 +1,10 @@
-https://www.youtube.com/watch?v=OU7WuVGSuZw
+
+from terminal
+
+`createdb spider`
+
+then
+
+`psql -p5432`
+
+`username=# \l`
