@@ -1,10 +1,12 @@
-import Promise from 'bluebird'
-import fs from 'fs'
-import pg from 'pg'
-import request from 'superagent'
-import cheerio from 'cheerio'
-import Url from 'url'
-import R from 'ramda'
+'use strict';
+
+const Promise = require('bluebird')
+const fs = require('fs')
+const pg = require('pg')
+const request = require('superagent')
+const cheerio = require('cheerio')
+const Url = require('url')
+const R = require('ramda')
 
 const handleError = (err) => {
   console.log('Oh no! An error:', err)

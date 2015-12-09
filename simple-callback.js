@@ -1,13 +1,28 @@
+'use strict'
+
+let glo = 0
+
+setTimeout(() => {
+
+  glo = 4
+  callback(glo)
+}, 3000)
+
+
 const myFunction = (callback) => {
+
+
   setTimeout(() => {
-    callback()
+
+    glo = 4
+    callback(glo)
   }, 3000)
 }
 
-const myCallback = () => {
-  console.log('callback fired')
+const myCallback = (res) => {
+  console.log('callback fired', res)
 }
 
 console.log('before')
 myFunction(myCallback)
-console.log('after')
+console.log('after', glo)

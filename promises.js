@@ -1,47 +1,54 @@
-var Promise = require('bluebird')
-var fs = require('fs')
-var request = require('request')
-var cheerio = require('cheerio')
-var each = require('lodash.foreach')
-var map = require('lodash.map')
+'use strict';
+
+const Promise = require('bluebird')
+const fs = require('fs')
+const request = require('superagent')
+const cheerio = require('cheerio')
+const each = require('lodash.foreach')
+const map = require('lodash.map')
+const R = require('ramda')
+const Url = require('url')
+const filePath = __dirname + '/data/urls.json'
 
 var readFileAsync = Promise.promisify(fs.readFile)
-var requestAsync = Promise.promisify(request)
 
-var filePath = __dirname + '/data/urls.json'
+const extractUrls = R.compose(
+  R.uniq,
+  R.filter(href => R.match(/http/g, href).length > 0),
+  R.map(anchor => anchor.attribs.href),
+  R.filter(anchor => anchor.attribs && anchor.attribs.href),
+  R.values
+)
+
+
+const requestAsync = (url) => {
+  return new Promise((resolve, reject) => {
+    let hostname = Url.parse(url).hostname
+
+    request
+      .get(url)
+      .end((err, data) => {
+        if (err) { reject(err) }
+        var $ = cheerio.load(data.text)
+
+        var links = R.filter(u => {
+          let urlObj = Url.parse(u)
+          return urlObj.hostname !== hostname
+        }, extractUrls($('a')))
+
+        resolve(links)
+    })
+  })
+}
 
 readFileAsync(filePath)
   .then(function (data) {
     var urls = JSON.parse(data)
     return Promise.map(urls, requestAsync)
   })
-  .then(function )
-
-function fetchUrlsFromFile (filePath, callback) {
-  fs.readFile(__dirname + filePath, 'utf8', function (err, data) {
-    if (err) {
-      callback(err)
-    } else {
-      var urls = JSON.parse(data)
-      urls.forEach(function (url) {
-        request(url, callback)
-      })
-    }
+  .then(function (results) {
+    console.log('result', results)
   })
-}
 
-fetchUrlsFromFile('/data/urls.json', function (err, data) {
-  if (err) {
-    console.log('Oh no! An error: ', err)
-  } else if (data) {
-    var fileName = data.request.host + '.json'
-    var $ = cheerio.load(data.body)
-    var links = map($('a'), function (link) { return link.attribs.href })
-    var linkFile = JSON.stringify(links, null, ' ')
 
-    fs.writeFile(__dirname + '/data/' + fileName, linkFile, 'utf8', function (err) {
-      if (err) { handleError(err) }
-      console.log(fileName + ' written!')
-    })
-  }
-})
+// })
